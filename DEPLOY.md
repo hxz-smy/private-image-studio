@@ -50,8 +50,6 @@ nano .env.production
 写入：
 
 ```env
-APP_PASSWORD=换成你的网页访问密码
-AUTH_SECRET=换成一串很长的随机字符
 DEFAULT_IMAGE_BASE_URL=https://www.lingxiapi.com/v1
 DEFAULT_IMAGE_MODEL=gpt-image-2
 ```
@@ -103,9 +101,13 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Port $server_port;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+        proxy_redirect http://localhost:3000/ /;
+        proxy_redirect http://127.0.0.1:3000/ /;
     }
 }
 ```

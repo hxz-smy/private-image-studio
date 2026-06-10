@@ -7,7 +7,6 @@ import {
   EyeOff,
   Image as ImageIcon,
   LoaderCircle,
-  LogOut,
   RefreshCw,
   Send,
   Settings2,
@@ -158,11 +157,6 @@ export default function Home() {
     }
   }
 
-  async function logout() {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/login";
-  }
-
   const canGenerate = apiKey.trim() && baseUrl.trim() && model.trim() && prompt.trim();
 
   return (
@@ -184,10 +178,6 @@ export default function Home() {
               {status}
             </div>
           </div>
-          <button className="ghost-button compact-button" onClick={logout} type="button">
-            <LogOut size={16} />
-            退出
-          </button>
 
           <div className="form">
             <div className="field">
