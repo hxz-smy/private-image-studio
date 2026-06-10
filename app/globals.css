@@ -313,6 +313,79 @@ textarea:focus {
   line-height: 1.35;
 }
 
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.upload-zone {
+  display: grid;
+  min-height: 88px;
+  place-items: center;
+  gap: 5px;
+  border: 1px dashed color-mix(in srgb, var(--green) 58%, var(--line));
+  border-radius: 8px;
+  background: #f4f8f2;
+  color: var(--green-dark);
+  cursor: pointer;
+  padding: 14px;
+  text-align: center;
+}
+
+.upload-zone span {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.upload-zone small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.reference-preview {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffefa;
+  padding: 8px;
+}
+
+.reference-preview img {
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.reference-meta {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.reference-meta strong,
+.reference-meta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reference-meta strong {
+  font-size: 13px;
+}
+
+.reference-meta span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .hero-output {
   display: grid;
   min-height: 520px;

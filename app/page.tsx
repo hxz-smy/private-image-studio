@@ -7,6 +7,8 @@ import {
   EyeOff,
   Image as ImageIcon,
   LoaderCircle,
+  Trash2,
+  Upload,
   RefreshCw,
   Send,
   Settings2,
@@ -27,6 +29,12 @@ type GenerateResponse = {
   };
   finalPrompt?: string;
   error?: string;
+};
+
+type ReferenceImageState = {
+  dataUrl: string;
+  name: string;
+  type: string;
 };
 
 const storageKey = "private-image-studio-config";
@@ -50,6 +58,7 @@ export default function Home() {
   const [currentImage, setCurrentImage] = useState("");
   const [currentFilename, setCurrentFilename] = useState("");
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
+  const [referenceImage, setReferenceImage] = useState<ReferenceImageState | null>(null);
 
   const activePreset = useMemo(
     () => skillPresets.find((preset) => preset.id === presetId) ?? skillPresets[0],
@@ -121,6 +130,34 @@ export default function Home() {
     setPrompt(nextPreset.defaultPrompt);
   }
 
+  async function selectReferenceImage(file: File | undefined) {
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("只能上传图片文件");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError("参考图不能超过 10MB");
+      return;
+    }
+
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("读取参考图失败"));
+      reader.readAsDataURL(file);
+    });
+
+    setReferenceImage({
+      dataUrl,
+      name: file.name,
+      type: file.type
+    });
+    setError("");
+  }
+
   async function generateImage() {
     setError("");
     setIsGenerating(true);
@@ -139,7 +176,8 @@ export default function Home() {
           prompt,
           presetId,
           size,
-          quality
+          quality,
+          referenceImage
         })
       });
 
@@ -279,6 +317,44 @@ export default function Home() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="referenceImage">参考图</label>
+              {referenceImage ? (
+                <div className="reference-preview">
+                  <img alt="Reference preview" src={referenceImage.dataUrl} />
+                  <div className="reference-meta">
+                    <strong>{referenceImage.name}</strong>
+                    <span>生成时会作为图片参考传给模型</span>
+                  </div>
+                  <button
+                    aria-label="移除参考图"
+                    className="icon-button"
+                    onClick={() => setReferenceImage(null)}
+                    title="移除参考图"
+                    type="button"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ) : (
+                <label className="upload-zone" htmlFor="referenceImage">
+                  <Upload size={18} />
+                  <span>添加参考图</span>
+                  <small>PNG / JPG / WebP，最大 10MB</small>
+                </label>
+              )}
+              <input
+                accept="image/png,image/jpeg,image/webp"
+                className="file-input"
+                id="referenceImage"
+                onChange={(event) => {
+                  void selectReferenceImage(event.target.files?.[0]);
+                  event.target.value = "";
+                }}
+                type="file"
+              />
             </div>
 
             <div className="field">

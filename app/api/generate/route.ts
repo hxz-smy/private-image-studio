@@ -13,6 +13,11 @@ type GenerateRequest = {
   presetId?: string;
   size?: string;
   quality?: string;
+  referenceImage?: {
+    dataUrl?: string;
+    name?: string;
+    type?: string;
+  } | null;
 };
 
 function cleanText(value: unknown) {
@@ -29,6 +34,13 @@ export async function POST(request: Request) {
     const presetId = cleanText(body.presetId) || skillPresets[0].id;
     const size = cleanText(body.size) || "1024x1536";
     const quality = cleanText(body.quality) || "high";
+    const referenceImage = body.referenceImage?.dataUrl
+      ? {
+          dataUrl: body.referenceImage.dataUrl,
+          name: cleanText(body.referenceImage.name) || "reference.png",
+          type: cleanText(body.referenceImage.type) || "image/png"
+        }
+      : null;
 
     if (!apiKey) {
       return NextResponse.json({ error: "Missing API key" }, { status: 400 });
@@ -49,7 +61,8 @@ export async function POST(request: Request) {
       model,
       prompt: finalPrompt,
       size,
-      quality
+      quality,
+      referenceImage
     });
 
     return NextResponse.json({
