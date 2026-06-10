@@ -48,6 +48,7 @@ export default function Home() {
   const [status, setStatus] = useState("就绪");
   const [error, setError] = useState("");
   const [currentImage, setCurrentImage] = useState("");
+  const [currentFilename, setCurrentFilename] = useState("");
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
 
   const activePreset = useMemo(
@@ -109,6 +110,7 @@ export default function Home() {
     setGallery(data.images);
     if (!currentImage && data.images[0]) {
       setCurrentImage(data.images[0].url);
+      setCurrentFilename(data.images[0].filename);
     }
   }
 
@@ -147,6 +149,7 @@ export default function Home() {
       }
 
       setCurrentImage(data.image.url);
+      setCurrentFilename(data.image.filename);
       setStatus("已完成");
       await loadGallery();
     } catch (caught) {
@@ -324,7 +327,7 @@ export default function Home() {
 
           {currentImage ? (
             <div className="actions">
-              <a className="ghost-button" download href={currentImage}>
+              <a className="ghost-button" download={currentFilename || true} href={currentImage}>
                 <Download size={16} />
                 下载
               </a>
@@ -347,7 +350,10 @@ export default function Home() {
                 <button
                   className="thumb"
                   key={image.filename}
-                  onClick={() => setCurrentImage(image.url)}
+                  onClick={() => {
+                    setCurrentImage(image.url);
+                    setCurrentFilename(image.filename);
+                  }}
                   type="button"
                   title={image.filename}
                 >

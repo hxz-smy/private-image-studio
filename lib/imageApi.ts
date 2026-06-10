@@ -1,5 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { imageUrl, writeGeneratedImage } from "@/lib/imageStorage";
 
 type GenerateImageInput = {
   apiKey: string;
@@ -80,15 +79,11 @@ export async function generateImage(input: GenerateImageInput) {
   }
 
   const { buffer, extension } = await imageBufferFromItem(item);
-  const outputDir = path.join(process.cwd(), "public", "generated");
-  await mkdir(outputDir, { recursive: true });
-
   const filename = `image-${Date.now()}.${extension}`;
-  const diskPath = path.join(outputDir, filename);
-  await writeFile(diskPath, buffer);
+  await writeGeneratedImage(filename, buffer);
 
   return {
-    url: `/generated/${filename}`,
+    url: imageUrl(filename),
     filename
   };
 }

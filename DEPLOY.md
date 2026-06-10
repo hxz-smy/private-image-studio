@@ -78,6 +78,8 @@ pm2 status
 pm2 logs private-image-studio
 ```
 
+生成图片默认保存到运行目录下的 `storage/generated/`，并通过 `/api/images/<filename>` 访问，不依赖 `public/generated` 静态目录。
+
 ## 6. 配置 Nginx 反向代理
 
 创建配置：
