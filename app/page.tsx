@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Download,
   Eye,
@@ -37,7 +38,9 @@ type ReferenceImageState = {
   type: string;
 };
 
-const storageKey = "private-image-studio-config";
+const legacyStorageKey = "private-image-studio-config";
+const storageKey = "private-image-studio-image-config";
+const draftStorageKey = "private-image-studio-draft-prompt";
 
 const sizes = ["1024x1024", "1024x1536", "1536x1024", "2048x2048"];
 const qualities = ["low", "medium", "high", "auto"];
@@ -50,7 +53,6 @@ export default function Home() {
   const [quality, setQuality] = useState("high");
   const [presetId, setPresetId] = useState(skillPresets[0].id);
   const [prompt, setPrompt] = useState(skillPresets[0].defaultPrompt);
-  const [remember, setRemember] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [status, setStatus] = useState("就绪");
@@ -59,6 +61,7 @@ export default function Home() {
   const [currentFilename, setCurrentFilename] = useState("");
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [referenceImage, setReferenceImage] = useState<ReferenceImageState | null>(null);
+  const [configLoaded, setConfigLoaded] = useState(false);
 
   const activePreset = useMemo(
     () => skillPresets.find((preset) => preset.id === presetId) ?? skillPresets[0],
@@ -66,7 +69,8 @@ export default function Home() {
   );
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(storageKey);
+    const stored =
+      window.localStorage.getItem(storageKey) ?? window.localStorage.getItem(legacyStorageKey);
     if (stored) {
       try {
         const value = JSON.parse(stored) as {
@@ -76,7 +80,6 @@ export default function Home() {
           size?: string;
           quality?: string;
           presetId?: string;
-          remember?: boolean;
         };
         setApiKey(value.apiKey ?? "");
         setBaseUrl(value.baseUrl ?? "https://www.lingxiapi.com/v1");
@@ -84,20 +87,33 @@ export default function Home() {
         setSize(value.size ?? "1024x1536");
         setQuality(value.quality ?? "high");
         setPresetId(value.presetId ?? skillPresets[0].id);
-        setRemember(Boolean(value.remember));
       } catch {
         window.localStorage.removeItem(storageKey);
       }
     }
 
+    const draft = window.localStorage.getItem(draftStorageKey);
+    if (draft) {
+      try {
+        const value = JSON.parse(draft) as {
+          prompt?: string;
+          presetId?: string;
+        };
+        if (value.prompt) setPrompt(value.prompt);
+        if (value.presetId) setPresetId(value.presetId);
+      } catch {
+        // Ignore malformed drafts.
+      } finally {
+        window.localStorage.removeItem(draftStorageKey);
+      }
+    }
+
     void loadGallery();
+    setConfigLoaded(true);
   }, []);
 
   useEffect(() => {
-    if (!remember) {
-      window.localStorage.removeItem(storageKey);
-      return;
-    }
+    if (!configLoaded) return;
 
     window.localStorage.setItem(
       storageKey,
@@ -107,11 +123,10 @@ export default function Home() {
         model,
         size,
         quality,
-        presetId,
-        remember
+        presetId
       })
     );
-  }, [apiKey, baseUrl, model, presetId, quality, remember, size]);
+  }, [apiKey, baseUrl, configLoaded, model, presetId, quality, size]);
 
   async function loadGallery() {
     const response = await fetch("/api/gallery", { cache: "no-store" });
@@ -219,6 +234,9 @@ export default function Home() {
               {status}
             </div>
           </div>
+          <Link className="ghost-button compact-button" href="/prompt">
+            Prompt 生成器
+          </Link>
 
           <div className="form">
             <div className="field">
@@ -253,16 +271,7 @@ export default function Home() {
                   {showKey ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              <div className="save-line">
-                <label className="check">
-                  <input
-                    checked={remember}
-                    onChange={(event) => setRemember(event.target.checked)}
-                    type="checkbox"
-                  />
-                  本机记住
-                </label>
-              </div>
+              <p className="subtle">文生图配置会自动保存在此浏览器</p>
             </div>
 
             <div className="row">

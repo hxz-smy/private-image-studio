@@ -5,6 +5,8 @@ export type SkillPreset = {
   description: string;
   defaultPrompt: string;
   promptTemplate: string;
+  promptGuide: string;
+  negativePrompt?: string;
   modelHint?: string;
 };
 
@@ -15,6 +17,10 @@ export const skillPresets: SkillPreset[] = [
     shortName: "新中式",
     description: "竹影、水墨、留白、素色衣袍、半身人像",
     defaultPrompt: "一张清冷文人风的新中式女性写真，竹影、水墨背景、半身构图",
+    promptGuide:
+      "新中式人像写真。强调清冷文人气质、竹影、水墨留白、宣纸质感、素色棉麻/绸缎、盘扣、旗袍/马面裙/宽袍大袖、柔和散射光、克制构图。避免堆叠过多中式元素，保持人脸自然、手部准确、背景干净。",
+    negativePrompt:
+      "text, watermark, logo, extra fingers, distorted hands, unnatural face, overdecorated background, anime, cartoon, low quality",
     promptTemplate: `Use case: portrait-photography
 Asset type: ai-photography portrait
 Primary request: {{prompt}}
@@ -34,6 +40,10 @@ Constraints: clear natural face, accurate eyes, accurate hands, elegant posture,
     shortName: "写实",
     description: "自然光、真实质感、摄影语言",
     defaultPrompt: "一张自然光下的写实人物摄影",
+    promptGuide:
+      "写实摄影。强调真实光线、自然皮肤、可信空间、相机镜头语言、主体清晰、背景有层次。适合人物、生活方式、产品和环境摄影。",
+    negativePrompt:
+      "text, watermark, logo, distorted anatomy, extra fingers, plastic skin, low resolution, oversaturated colors",
     promptTemplate: `Use case: photorealistic-natural
 Asset type: ai-photography
 Primary request: {{prompt}}
@@ -49,4 +59,8 @@ Constraints: accurate anatomy, clear face, accurate hands, no text, no watermark
 export function buildPrompt(presetId: string, prompt: string) {
   const preset = skillPresets.find((item) => item.id === presetId) ?? skillPresets[0];
   return preset.promptTemplate.replaceAll("{{prompt}}", prompt.trim());
+}
+
+export function getSkillPreset(presetId: string) {
+  return skillPresets.find((item) => item.id === presetId) ?? skillPresets[0];
 }
